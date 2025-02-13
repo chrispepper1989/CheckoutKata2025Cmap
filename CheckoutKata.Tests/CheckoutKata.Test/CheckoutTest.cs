@@ -1,4 +1,5 @@
 ﻿using CheckoutKata.Main;
+using FakeItEasy;
 
 namespace CheckoutKata.Test;
 
@@ -32,7 +33,9 @@ public class CheckoutTest
     public void WhenOneItemScanned_TotalIsPriceOfItem(string item, int expectedPrice)
     {
         //arrange
-        ICheckout checkout = new Checkout();
+        IItemPriceRespository mockItemPriceRespository = A.Fake<IItemPriceRespository>();
+        A.CallTo(() => mockItemPriceRespository.GetItemPrice(item)).Returns(expectedPrice);
+        ICheckout checkout = new Checkout(mockItemPriceRespository);
         
         //act
         checkout.Scan(item);
