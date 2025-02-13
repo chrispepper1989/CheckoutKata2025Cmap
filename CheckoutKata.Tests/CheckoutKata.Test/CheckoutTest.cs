@@ -25,6 +25,15 @@ frequently, so pricing should be independent to the c
 
 public class CheckoutTest
 {
+    IItemPriceRespository mockItemPriceRespository = A.Fake<IItemPriceRespository>();
+    public CheckoutTest()
+    {
+        A.CallTo(() => mockItemPriceRespository.GetItemPrice("ItemA")).Returns(50);
+        A.CallTo(() => mockItemPriceRespository.GetItemPrice("ItemB")).Returns(30);
+        A.CallTo(() => mockItemPriceRespository.GetItemPrice("ItemC")).Returns(20);
+        A.CallTo(() => mockItemPriceRespository.GetItemPrice("ItemD")).Returns(15);
+        
+    }
     [Theory]
     [InlineData ("ItemA", 50)]
     [InlineData ("ItemB", 30)]
@@ -33,8 +42,7 @@ public class CheckoutTest
     public void WhenOneItemScanned_TotalIsPriceOfItem(string item, int expectedPrice)
     {
         //arrange
-        IItemPriceRespository mockItemPriceRespository = A.Fake<IItemPriceRespository>();
-        A.CallTo(() => mockItemPriceRespository.GetItemPrice(item)).Returns(expectedPrice);
+        
         ICheckout checkout = new Checkout(mockItemPriceRespository);
         
         //act
