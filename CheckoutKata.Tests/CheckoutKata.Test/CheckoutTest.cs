@@ -24,17 +24,21 @@ frequently, so pricing should be independent to the c
 
 public class CheckoutTest
 {
-    [Fact]
-    public void ItemAIs50()
+    [Theory]
+    [InlineData ("ItemA", 50)]
+    [InlineData ("ItemB", 30)]
+    [InlineData ("ItemC", 20)]
+    [InlineData ("ItemD", 15)]
+    public void WhenOneItemScanned_TotalIsPriceOfItem(string item, int expectedPrice)
     {
         //arrange
         ICheckout checkout = new Checkout();
         
         //act
-        checkout.Scan("ItemA");
+        checkout.Scan(item);
         var result  = checkout.GetTotalPrice();
         
         //assert
-        Assert.Equal(50, result);
+        Assert.Equal(expectedPrice, result);
     }
 }
