@@ -2,5 +2,6 @@
 
 public interface IItemPriceRespository
 {
-    int GetItemPrice(string item);
+    int GetItemPrice(string item, int units);
 }
+

@@ -1,38 +1,28 @@
 ﻿namespace CheckoutKata.Main;
 
-
-
-public class Checkout(IItemPriceRespository _itemPriceRespository,IDiscountRuleRepository discountRules) : ICheckout
+public class Checkout(IItemPriceRespository itemPriceRespository) : ICheckout
 {
-
-    List<string> items = new List<string>();
-    int _totalPrice;
+    private readonly List<string> _items = [];
 
     public void Scan(string item)
     {
-        items.Add(item);
-       
+        _items.Add(item);
     }
 
     public int GetTotalPrice()
     {
-        // get all the rules to apply
-        var discounts = discountRules.GetAllDiscountRules(items.ToArray());
-        var discountedItemsCost = 0;
-        var standardItems = new List<string>(items);
-        foreach (var discount in discounts)
+        // group all the items by their name (SKU) and then apply pricing rules
+        var itemGroups = _items.GroupBy(x => x);
+        var priceSums = itemGroups.Sum(itemGroup =>
         {
-            var discountedItems = new Stack<string>(discount.ItemsProcessed);
-            while (discountedItems.TryPop(out var discountItem))
-            {
-                //remove exactly 1 of the discount items from our "basket"
-                standardItems.Remove(discountItem);
-            }
-
-            discountedItemsCost += discount.CostToAdd;
-        }
-
-        return standardItems.Sum(_itemPriceRespository.GetItemPrice) + discountedItemsCost;
-
+            //lets put everyting into sensible names
+            var sku = itemGroup.Key;
+            var units = itemGroup.Count();
+            //get  price
+            return itemPriceRespository.GetItemPrice(sku, units);
+            
+        });
+        
+        return priceSums;
     }
 }

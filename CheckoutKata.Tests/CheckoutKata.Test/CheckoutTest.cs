@@ -23,19 +23,50 @@ recognise the two Bs and price them at 45 (for a total price so far of 95). The 
 frequently, so pricing should be independent to the c
  */
 
-public class CheckoutTest
+public partial class CheckoutTest
 {
     IItemPriceRespository mockItemPriceRespository = A.Fake<IItemPriceRespository>();
-    IDiscountRuleRepository mockDiscountRuleRepository = A.Fake<IDiscountRuleRepository>();
+
+    // basic price repo used for tests
+    public class BasicPriceRepository : IItemPriceRespository
+    {
+        private readonly Dictionary<string, Func<int, int>> _itemPriceRules = new();
+            
+            // set up all pricing rules for the test
+        BasicPriceRepository()
+        {
+            // define a simple factor to create pricing rules
+            Func<int,int> CreateTriggerPricingRule(int regularPrice, int specialPrice, int triggerQuantity) => units => (units/triggerQuantity * specialPrice) + units % triggerQuantity* regularPrice
+
+            
+            //Item A Pricing 
+            //A s 50 3 for 130
+            _itemPriceRules["ItemA"] = CreateTriggerPricingRule(regularPrice:50, specialPrice:130, triggerQuantity:3);
+            
+            //Item B Pricing 
+            //B 30 2 for 45
+            _itemPriceRules["ItemB"] = CreateTriggerPricingRule(regularPrice:30, specialPrice:45, triggerQuantity:2);
+            
+            //Item C Pricing 
+            //C 20
+            _itemPriceRules["ItemC"] = units => 20 * units;
+            
+            //C 20
+            _itemPriceRules["ItemD"] = units => 15 * units;
+        }
+        public int GetItemPrice(string item, int units) => _itemPriceRules[item](units);
+        
+    }
+    
     private ICheckout _checkout;
     public CheckoutTest()
     {
-        A.CallTo(() => mockItemPriceRespository.GetItemPrice("ItemA")).Returns(50);
-        A.CallTo(() => mockItemPriceRespository.GetItemPrice("ItemB")).Returns(30);
-        A.CallTo(() => mockItemPriceRespository.GetItemPrice("ItemC")).Returns(20);
-        A.CallTo(() => mockItemPriceRespository.GetItemPrice("ItemD")).Returns(15);
+        //set up standard pricing
         
-        _checkout = new Checkout(mockItemPriceRespository, mockDiscountRuleRepository);
+        
+        //set up pricing rules
+   
+        _checkout = new Checkout(mockItemPriceRespository);
         
     }
     [Theory]
@@ -101,12 +132,15 @@ public class CheckoutTest
     public void WhenMultipleItemsAreScanned_TotalPriceTakesIntoAccountOffers( int expectedPrice, params string[] items)
     {
         //arrange
-        A.CallTo(() => mockDiscountRuleRepository.GetAllDiscountRules(items))
+        A.CallTo(() => mockPricingRuleRepository.GetAllDiscountRules(items))
             .Returns(
             [new DiscountRule(["ItemB", "ItemB"], 45),
             new DiscountRule(["ItemA", "ItemA", "ItemA"], 130)]);
         
-        ICheckout checkout = new Checkout(mockItemPriceRespository,mockDiscountRuleRepository);
+        ICheckout checkout = new Checkout(mockItemPriceRespository, new List<IPricingRule>()
+        {
+            
+        });
         
         //act 
         foreach (var item in items)
