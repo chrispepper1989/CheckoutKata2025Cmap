@@ -52,4 +52,35 @@ public class CheckoutTest
         //assert
         Assert.Equal(expectedPrice, result);
     }
+    
+    /*
+     *  "ItemA" = 50
+        "ItemB" = 30
+        "ItemC" = 20
+        "ItemD" = 15
+     */
+    [Theory]
+    [InlineData ( 80, "ItemA", "ItemB")]
+    [InlineData ( 100, "ItemB", "ItemC", "ItemA")]
+    [InlineData ( 35, "ItemC", "ItemD")]
+    [InlineData ( 105, "ItemD", "ItemA","ItemB", "ItemC")]
+    public void WhenMultipleItemsScanned_TotalIsSumPriceOfItems( int expectedPrice, params string[] items)
+    {
+        //arrange
+        
+        ICheckout checkout = new Checkout(mockItemPriceRespository);
+        
+        //act
+        foreach (var item in items)
+        {
+            checkout.Scan(item);
+        }
+        
+        var result  = checkout.GetTotalPrice();
+        
+        //assert
+        Assert.Equal(expectedPrice, result);
+    }
+    
+    
 }
