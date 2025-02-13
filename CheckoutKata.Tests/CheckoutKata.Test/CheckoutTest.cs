@@ -25,7 +25,7 @@ frequently, so pricing should be independent to the c
 
 public partial class CheckoutTest
 {
-    IItemPriceRespository mockItemPriceRespository = A.Fake<IItemPriceRespository>();
+    
 
     // basic price repo used for tests
     public class BasicPriceRepository : IItemPriceRespository
@@ -33,10 +33,11 @@ public partial class CheckoutTest
         private readonly Dictionary<string, Func<int, int>> _itemPriceRules = new();
             
             // set up all pricing rules for the test
-        BasicPriceRepository()
+        public BasicPriceRepository()
         {
             // define a simple factor to create pricing rules
-            Func<int,int> CreateTriggerPricingRule(int regularPrice, int specialPrice, int triggerQuantity) => units => (units/triggerQuantity * specialPrice) + units % triggerQuantity* regularPrice
+            Func<int, int> CreateTriggerPricingRule(int regularPrice, int specialPrice, int triggerQuantity) => units =>
+                (units / triggerQuantity * specialPrice) + units % triggerQuantity * regularPrice;
 
             
             //Item A Pricing 
@@ -57,6 +58,8 @@ public partial class CheckoutTest
         public int GetItemPrice(string item, int units) => _itemPriceRules[item](units);
         
     }
+    
+    IItemPriceRespository mockItemPriceRespository = new BasicPriceRepository();
     
     private ICheckout _checkout;
     public CheckoutTest()
@@ -132,15 +135,9 @@ public partial class CheckoutTest
     public void WhenMultipleItemsAreScanned_TotalPriceTakesIntoAccountOffers( int expectedPrice, params string[] items)
     {
         //arrange
-        A.CallTo(() => mockPricingRuleRepository.GetAllDiscountRules(items))
-            .Returns(
-            [new DiscountRule(["ItemB", "ItemB"], 45),
-            new DiscountRule(["ItemA", "ItemA", "ItemA"], 130)]);
-        
-        ICheckout checkout = new Checkout(mockItemPriceRespository, new List<IPricingRule>()
-        {
-            
-        });
+
+
+        ICheckout checkout = new Checkout(mockItemPriceRespository);
         
         //act 
         foreach (var item in items)
