@@ -8,13 +8,14 @@ public interface ICheckout
 
 public class Checkout : ICheckout
 {
+    int _totalPrice;
     public void Scan(string item)
     {
-        throw new NotImplementedException();
+        _totalPrice += 50;
     }
 
     public int GetTotalPrice()
     {
-        throw new NotImplementedException();
+        return _totalPrice;
     }
 }
