@@ -82,5 +82,27 @@ public class CheckoutTest
         Assert.Equal(expectedPrice, result);
     }
     
+    /*
+     * A  3 for 130
+     */
+    [Theory]
+    [InlineData ( 130, "ItemA", "ItemA", "ItemA")]
+    public void WhenMultipleItemAIsScanned_TotalPriceTakesIntoAcountOffer( int expectedPrice, params string[] items)
+    {
+        //arrange
+        
+        ICheckout checkout = new Checkout(mockItemPriceRespository);
+        
+        //act
+        foreach (var item in items)
+        {
+            checkout.Scan(item);
+        }
+        
+        var result  = checkout.GetTotalPrice();
+        
+        //assert
+        Assert.Equal(expectedPrice, result);
+    }
     
 }
