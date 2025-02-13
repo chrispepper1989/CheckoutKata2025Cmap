@@ -27,7 +27,15 @@ public partial class CheckoutTest
 {
     
 
-    // basic price repo used for tests
+    /// <summary>
+    /// A basic implementation of a price repo for the test
+    ///
+    /// You would imagine that the real "price repo" would itself take some kind of "StandardPrice" repo and "RulesRepo" or something
+    /// But it would essentially perform the same function, returning "RegularPrices" and "SpecialPrices"
+    /// In theory you could imagine this evolving to have a list of price rules and then some form of strat (like lowest price wins)
+    /// but that "stat selection" could (and imho should) stay the responsibility of the price repo, leaving the checkout to be a relatively
+    /// "dumb" class.
+    /// </summary>
     public class BasicPriceRepository : IItemPriceRespository
     {
         private readonly Dictionary<string, Func<int, int>> _itemPriceRules = new();
@@ -37,8 +45,11 @@ public partial class CheckoutTest
         {
             // define a simple factor to create pricing rules
             Func<int, int> CreateTriggerPricingRule(int regularPrice, int specialPrice, int triggerQuantity) => units =>
+                // essentially use divided and remainers to work out special and regular
                 (units / triggerQuantity * specialPrice) + units % triggerQuantity * regularPrice;
 
+            
+            //---- Special Offer price rules ---- 
             
             //Item A Pricing 
             //A s 50 3 for 130
@@ -48,30 +59,21 @@ public partial class CheckoutTest
             //B 30 2 for 45
             _itemPriceRules["ItemB"] = CreateTriggerPricingRule(regularPrice:30, specialPrice:45, triggerQuantity:2);
             
+            
+            //---- "Regular Price Rule" ---- 
             //Item C Pricing 
             //C 20
             _itemPriceRules["ItemC"] = units => 20 * units;
             
-            //C 20
+            //D 15
             _itemPriceRules["ItemD"] = units => 15 * units;
         }
-        public int GetItemPrice(string item, int units) => _itemPriceRules[item](units);
+        public int GetItemPrice(string itemSku, int units) => _itemPriceRules[itemSku](units);
         
     }
     
-    IItemPriceRespository mockItemPriceRespository = new BasicPriceRepository();
-    
-    private ICheckout _checkout;
-    public CheckoutTest()
-    {
-        //set up standard pricing
-        
-        
-        //set up pricing rules
    
-        _checkout = new Checkout(mockItemPriceRespository);
-        
-    }
+
     [Theory]
     [InlineData ("ItemA", 50)]
     [InlineData ("ItemB", 30)]
@@ -80,10 +82,11 @@ public partial class CheckoutTest
     public void WhenOneItemScanned_TotalIsPriceOfItem(string item, int expectedPrice)
     {
         //arrange
+        var checkout = new Checkout(new BasicPriceRepository());
         
         //act
-        _checkout.Scan(item);
-        var result  = _checkout.GetTotalPrice();
+        checkout.Scan(item);
+        var result  = checkout.GetTotalPrice();
         
         //assert
         Assert.Equal(expectedPrice, result);
@@ -103,15 +106,15 @@ public partial class CheckoutTest
     public void WhenMultipleItemsScanned_TotalIsSumPriceOfItems( int expectedPrice, params string[] items)
     {
         //arrange
-        
+        var checkout = new Checkout(new BasicPriceRepository());
         
         //act
         foreach (var item in items)
         {
-            _checkout.Scan(item);
+            checkout.Scan(item);
         }
         
-        var result  = _checkout.GetTotalPrice();
+        var result  = checkout.GetTotalPrice();
         
         //assert
         Assert.Equal(expectedPrice, result);
@@ -136,9 +139,7 @@ public partial class CheckoutTest
     public void WhenMultipleItemsAreScanned_TotalPriceTakesIntoAccountOffers( int expectedPrice, params string[] items)
     {
         //arrange
-
-
-        ICheckout checkout = new Checkout(mockItemPriceRespository);
+        var checkout = new Checkout(new BasicPriceRepository());
         
         //act 
         foreach (var item in items)
