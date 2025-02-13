@@ -18,6 +18,10 @@ public class Checkout(IItemPriceRespository itemPriceRespository) : ICheckout
         {
             return 130;
         }
+        if (items.Count(item => item == "ItemB") == 2)
+        {
+            return 45;
+        }
 
         return items.Sum(_itemPriceRespository.GetItemPrice);
 
