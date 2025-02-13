@@ -63,7 +63,7 @@ public class CheckoutTest
     [InlineData ( 80, "ItemA", "ItemB")]
     [InlineData ( 100, "ItemB", "ItemC", "ItemA")]
     [InlineData ( 35, "ItemC", "ItemD")]
-    [InlineData ( 105, "ItemD", "ItemA","ItemB", "ItemC")]
+    [InlineData ( 115, "ItemD", "ItemA","ItemB", "ItemC")]
     public void WhenMultipleItemsScanned_TotalIsSumPriceOfItems( int expectedPrice, params string[] items)
     {
         //arrange
