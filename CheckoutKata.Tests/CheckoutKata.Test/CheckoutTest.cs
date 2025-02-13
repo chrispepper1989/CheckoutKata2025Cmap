@@ -132,6 +132,7 @@ public partial class CheckoutTest
     [InlineData ( 45, "ItemB", "ItemB")]
     [InlineData ( 130, "ItemA", "ItemA", "ItemA")]
     [InlineData ( 75, "ItemB", "ItemB", "ItemB")] //special offer plus none special
+    [InlineData ( 270, "ItemB", "ItemB", "ItemB", "ItemA", "ItemA", "ItemA", "ItemA", "ItemD")] //special offer plus none special
     public void WhenMultipleItemsAreScanned_TotalPriceTakesIntoAccountOffers( int expectedPrice, params string[] items)
     {
         //arrange
