@@ -83,45 +83,28 @@ public class CheckoutTest
         Assert.Equal(expectedPrice, result);
     }
     
-    /*
-     * A  3 for 130
-     */
-    [Theory]
-    [InlineData ( 130, "ItemA", "ItemA", "ItemA")]
-    public void WhenMultipleItemAIsScanned_TotalPriceTakesIntoAccountOffer( int expectedPrice, params string[] items)
-    {
-        //arrange
-        A.CallTo(() => mockDiscountRuleRepository.GetAllDiscountRules(items))
-            .Returns(
-            [new DiscountRule(["ItemA", "ItemA", "ItemA"], 130)]);
-        
-        ICheckout checkout = new Checkout(mockItemPriceRespository,mockDiscountRuleRepository);
-        
-        //act
-        foreach (var item in items)
-        {
-            checkout.Scan(item);
-        }
-        
-        var result  = checkout.GetTotalPrice();
-        
-        //assert
-        Assert.Equal(expectedPrice, result);
-    }
-    
     
     
     /*
-     * B  2 for 45
+     * "ItemA" = 50
+        "ItemB" = 30
+        "ItemC" = 20
+        "ItemD" = 15
+        
+     *  B  2 for 45
+     *  A  3 for 130
      */
     [Theory]
     [InlineData ( 45, "ItemB", "ItemB")]
-    public void WhenMultipleItemBIsScanned_TotalPriceTakesIntoAccountOffer( int expectedPrice, params string[] items)
+    [InlineData ( 130, "ItemA", "ItemA", "ItemA")]
+    [InlineData ( 75, "ItemB", "ItemB", "ItemB")] //special offer plus none special
+    public void WhenMultipleItemsAreScanned_TotalPriceTakesIntoAccountOffers( int expectedPrice, params string[] items)
     {
         //arrange
         A.CallTo(() => mockDiscountRuleRepository.GetAllDiscountRules(items))
             .Returns(
-            [new DiscountRule(["ItemB", "ItemB"], 45)]);
+            [new DiscountRule(["ItemB", "ItemB"], 45),
+            new DiscountRule(["ItemA", "ItemA", "ItemA"], 130)]);
         
         ICheckout checkout = new Checkout(mockItemPriceRespository,mockDiscountRuleRepository);
         
