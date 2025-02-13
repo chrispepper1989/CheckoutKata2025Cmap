@@ -108,7 +108,7 @@ public class CheckoutTest
         
         ICheckout checkout = new Checkout(mockItemPriceRespository,mockDiscountRuleRepository);
         
-        //act
+        //act 
         foreach (var item in items)
         {
             checkout.Scan(item);
